@@ -33,7 +33,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>PushButton</string>
+    <string>open</string>
    </property>
   </widget>
   <widget class="QLabel" name="outputLbl">
@@ -52,5 +52,25 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>getEqBtn</sender>
+   <signal>pressed()</signal>
+   <receiver>wid</receiver>
+   <slot>on_getEqBtn_pressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>297</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>290</x>
+     <y>405</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>on_getEqBtn_pressed()</slot>
+ </slots>
 </ui>

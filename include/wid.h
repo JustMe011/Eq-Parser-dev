@@ -22,6 +22,7 @@ private:
 
     void setTokenSample();
     void writeTokenSample();
+    void on_getEqBtn_pressed ();
 
 };
 

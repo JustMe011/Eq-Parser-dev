@@ -8,18 +8,20 @@ class eqParser
 {
 public:
     eqParser();
+    eqParser(QString equation);
     ~eqParser();
 
-    /* clean the inserted string in order to have only equation tokens
-     * remove blank spaces
-     * remove strange chars
-     * put all letters uppercase
-     *
-     */
 
-    void tokenize(QString eqString);
+    void getEquation (QString equation);
 private:
-//    tokenType *token1 = new tokenType;
+    bool eqInserted = false;
+    QString eqString;
+    QString wString;
+    void tokenize();
+    QString cleanChars(QString str);
+    QString toUpper(QString str);
+    void printEquation();
+
 };
 
 #endif // EQPARSER_H

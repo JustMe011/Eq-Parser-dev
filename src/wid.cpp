@@ -7,7 +7,7 @@ wid::wid(QWidget *parent) :
     ui(new Ui::wid)
 {
     ui->setupUi(this);
-    setTokenSample();
+    //setTokenSample();
 }
 
 wid::~wid()
@@ -43,4 +43,11 @@ void wid::writeTokenSample()
     std::cout << "token ass " << token1->getTokenAssociativity() << std::endl;
 
 
+}
+
+void wid::on_getEqBtn_pressed()
+{
+    QString eq;
+    eq = ui->outputLbl->text();
+    std::cout << "eq: " << eq.toStdString() << std::endl;
 }
