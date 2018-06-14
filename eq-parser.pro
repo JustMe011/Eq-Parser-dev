@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+INCLUDEPATH += include
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -24,16 +25,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
-        wid.cpp \
-    eqParser.cpp \
-    tokenType.cpp
+    src/eqParser.cpp \
+    src/main.cpp \
+    src/tokenType.cpp \
+    src/wid.cpp
+
 
 HEADERS += \
-        wid.h \
-    eqParser.h \
-    tokenType.h \
-    opsdef.h
+    include/eqParser.h \
+    include/tokenType.h \
+    include/wid.h
+
 
 FORMS += \
-        wid.ui
+    ui/wid.ui
+
