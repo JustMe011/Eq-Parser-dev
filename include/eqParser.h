@@ -20,6 +20,7 @@ private:
     void tokenize();
     QString cleanChars(QString str);
     QString toUpper(QString str);
+    bool isLetter(QChar currentChar);
     void printEquation();
 
 };
