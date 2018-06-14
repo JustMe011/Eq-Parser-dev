@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <tokenType.h>
+#include <eqParser.h>
 
 namespace Ui {
 class wid;
@@ -19,10 +20,12 @@ public:
 private:
     Ui::wid *ui;
     tokenType *token1 = new tokenType;
+    eqParser *parser;
 
     void setTokenSample();
     void writeTokenSample();
-    void on_getEqBtn_pressed ();
+private slots:
+    void on_getEqBtn_pressed();
 
 };
 

@@ -8,6 +8,7 @@ wid::wid(QWidget *parent) :
 {
     ui->setupUi(this);
     //setTokenSample();
+
 }
 
 wid::~wid()
@@ -32,11 +33,7 @@ void wid::setTokenSample()
 
 void wid::writeTokenSample()
 {
-//    QString temp = ui->outputLbl->text();
-//    temp.append(token1->getTokenStr());
-//    ui->outputLbl->setText(temp);
-//    //ui->outputLbl
-//    std::cout << "ciaoo" << std::endl;
+
     std::cout << "token code " << token1->getTokenCode() << std::endl;
     std::cout << "token str " << token1->getTokenStr().toStdString() << std::endl;
     std::cout << "token type " << token1->getTokenType() << std::endl;
@@ -48,6 +45,7 @@ void wid::writeTokenSample()
 void wid::on_getEqBtn_pressed()
 {
     QString eq;
-    eq = ui->outputLbl->text();
-    std::cout << "eq: " << eq.toStdString() << std::endl;
+    eq = ui->insertedTxt->text();
+    parser = new eqParser(eq);
+    std::cout << "str: " << eq.toStdString() << std::endl;
 }

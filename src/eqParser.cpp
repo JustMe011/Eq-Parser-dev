@@ -22,12 +22,17 @@ void eqParser::tokenize ()
      * [x] put all letters uppercase
      *
      */
-    QString tmpString = QString();
-    tmpString = cleanChars(wString);
-    tmpString = toUpper(tmpString);
-    wString = tmpString;
+    std::cout << "wString: " << wString.toStdString() << std::endl;
+    QString tmpString = wString;
+    wString = cleanChars(tmpString);
 
-    //printEquation();
+    std::cout << "toupper\nwString: " << wString.toStdString() << std::endl;
+    tmpString = wString;
+    wString = toUpper(tmpString);
+    std::cout << "wString: " << wString.toStdString() << std::endl;
+
+    /* to the next steps */
+    printEquation();
 }
 
 QString eqParser::cleanChars (QString str)
@@ -43,12 +48,11 @@ QString eqParser::cleanChars (QString str)
     for (int i=0; i < str.length(); ++i)
     {
         currentChar = str.at(i);
+        //std::cout << "CurrentChar: " << currentChar.unicode() << std::endl;
         //QStringList::iterator pos = qFind(blank.begin(),blank.end(),currentChar);
-            if (std::find(blank.begin(),blank.end(),currentChar) != blank.end())
-                outStr.append(str.at(i));
-        //        pos = qFind(blank,end, currentChar);
-        //outStr.append(str.at(i));if (pos != blank.end())
 
+        if (std::find(blank.begin(),blank.end(),currentChar) == blank.end())
+            outStr.append(str.at(i));
     }
     return outStr;
 }
@@ -58,7 +62,7 @@ QString eqParser::toUpper (QString str)
     QString outStr;
     foreach (QChar currentChar, str) {
        if (isLetter(currentChar))
-           toUpper(currentChar);
+           currentChar = currentChar.toUpper();
        outStr.append(currentChar);
     }
     return outStr;
