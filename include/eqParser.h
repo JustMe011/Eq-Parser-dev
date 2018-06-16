@@ -2,21 +2,27 @@
 #define EQPARSER_H
 
 #include <QObject>
+#include <QList>
 #include <tokenType.h>
 
 class eqParser
 {
 public:
     eqParser();
-    eqParser(QString equation);
     ~eqParser();
 
 
-    void getEquation (QString equation);
+    //void getEquation (QString equation);
+    QList<tokenType> * getRPN(QString equation);
+    void solveEq (QString equation);
+    void solveEq(QList<tokenType> * RPN);
+
 private:
     bool eqInserted = false;
     QString eqString;
     QString wString;
+    QList<tokenType> tokenList;
+
     void tokenize();
     QString cleanChars(QString str);
     QString toUpper(QString str);

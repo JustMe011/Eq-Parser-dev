@@ -46,6 +46,8 @@ void wid::on_getEqBtn_pressed()
 {
     QString eq;
     eq = ui->insertedTxt->text();
-    parser = new eqParser(eq);
+    //parser = new eqParser();
+    parser->getRPN(eq);
+
     std::cout << "str: " << eq.toStdString() << std::endl;
 }

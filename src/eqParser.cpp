@@ -1,18 +1,44 @@
 #include "eqParser.h"
 #include <QtAlgorithms>
 
-eqParser::eqParser (QString equation)
+//void eqParser::getEquation (QString equation)
+//{
+//    this->eqString = equation;
+//    wString = eqString;
+//    eqInserted = true;
+//    tokenize();
+//}
+
+/* START interface */
+
+
+
+void eqParser::solveEq (QString equation)
 {
-    getEquation(equation);
+   QList<tokenType> * RPN = getRPN(equation);
+
+   /* algorithm to solve equation
+    * It as to return 2 arrays:
+    * xp,yp -> I think I can use an object to treat these
+    * for the domain look into tokenList List -> it has an another property which say the
+    * density point
+    */
+
 }
 
-void eqParser::getEquation (QString equation)
+QList<tokenType> * eqParser::getRPN (QString equation)
 {
-    this->eqString = equation;
+    eqString = equation;
     wString = eqString;
     eqInserted = true;
     tokenize();
+
+    /* algorithm to generate RPN */
+
 }
+
+/* END interface */
+
 
 void eqParser::tokenize ()
 {

@@ -27,16 +27,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     src/eqParser.cpp \
     src/main.cpp \
+    src/plotPoint.cpp \
     src/tokenType.cpp \
     src/wid.cpp
 
 
+
 HEADERS += \
     include/eqParser.h \
+    include/plotPoint.h \
     include/tokenType.h \
     include/wid.h
 
 
+
 FORMS += \
     ui/wid.ui
+
 
