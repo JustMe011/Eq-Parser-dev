@@ -12,11 +12,14 @@ public:
 
     enum tokenTypes
     {
+        EMPTY = -1,
         NUMBER = 0,
         OPERATOR = 1,
         FUNCTION = 2,
-        BRACKET = 3,
-        OTHER = 4
+        BRACKETS = 3,
+        SEPARATOR = 4,
+        VARIABLE = 5,
+        OTHER = 6
         /* Add other types */
     };
     enum associativityType
@@ -26,28 +29,49 @@ public:
         RIGHT_ASSOCIATIVE = 2
     };
 
-    int getTokenCode();
-    int setTokenCode(int code);
+    /*
+     * Parentheses,
+     * Exponents Roots,
+     * Multiplication/Division,
+     * Addition/Subtraction
+     */
+    enum order
+    {
+      NONE = -1,
+        CURLY_BRACKETS = 0,
+        SQUARE_BRACKETS = 1,
+        BRACKETS = 2,
+        E = 3,
+        MD = 4,
+        AS = 5
+    };
 
-    void setTokenStr(QString opcode);
-    QString getTokenStr();
+    void str(QString opcode);
+    QString getStr();
 
-    void setTokenType(tokenTypes tokType);
+    void type (tokenTypes tokType);
     tokenTypes getTokenType();
 
-    void setTokenAssociativity(associativityType AssocType);
-    associativityType getTokenAssociativity();
+    void priority (order opOrder);
+    order getPriority ();
+
+    void associativity(associativityType AssocType);
+    associativityType getAssociativity();
+
+    void clear();
 
 private:
 
-    /* properties of a single token */
-    int tokenCode;
+    /* aggiungere priorita' operatore */
+
+    /**************************************/
+    tokenTypes tokenCode;
     QString tokenStr;
+    order opPriority;
     // need to add pointer to the func
-    tokenTypes tokenTypeCode;
     associativityType tokenAssociativity;
 
-    /* end token properties */
+    /**************************************/
 
 };
 

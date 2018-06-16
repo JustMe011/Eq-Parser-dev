@@ -1,5 +1,6 @@
 #include "eqParser.h"
 #include <QtAlgorithms>
+#include <QString>
 
 //void eqParser::getEquation (QString equation)
 //{
@@ -24,22 +25,61 @@ void eqParser::solveEq (QString equation)
     * density point
     */
 
+
 }
 
 QList<tokenType> * eqParser::getRPN (QString equation)
 {
+    tokenType lastEl, currentEl;
+
     eqString = equation;
     wString = eqString;
     eqInserted = true;
     tokenize();
 
-    /* algorithm to generate RPN */
+    /*****    algorithm to generate RPN    *****
+     *
+     * now wString is Clean... I need to work on it
+     * I need to create a buffer in order to read from the string and "operate" on it.
+     * My idea is: I red a char, if it's of a different type compared to the last readed
+     * i can push on queue/stack,
+     * if i read a number, a separator and a number again I have to compose a decimal number
+     *
+     *****                                 *****/
 
+    for (int eqIndex=0; eqIndex < wString.length(); ++eqIndex)
+    {
+        readChar = wString.at(eqIndex);
+        currentEl = getElement(readChar);
+        if (0 == eqIndex)
+            lastEl = getElement(readChar);
+        if (lastEl.getTokenType() == currentEl || 0 == eqIndex)
+        {
+            readBuf->enqueue(currentEl);
+
+        }
+        /* ora che ho pushato sul buffer, quando poi trovo che currentEl e' diverso da lastEl
+         * posso mandare readBuf su stack/coda in base a se e' operatore o numero (ed eliminare le
+         * parentesi)
+         */
+
+
+    }
 }
 
 /* END interface */
 
-
+tokenType * eqParser::getElement (QString read)
+{
+    tokenType * element;
+    /* compare read with tokenType::getstr() to know which token we have */
+    for (int i=0; i<tokenList.length(); ++i)
+        if (tokenList.at(i).getStr() == read){
+            // Found element
+            element = &tokenList.at(i);
+        }
+    return element;
+}
 void eqParser::tokenize ()
 {
     /* clean the inserted string in order to have only equation tokens
@@ -103,4 +143,163 @@ bool eqParser::isLetter(QChar currentChar)
 void eqParser::printEquation()
 {
     std::cout << "eq: " << wString.toStdString() << std::endl;
+}
+
+void eqParser::fillOps()
+{
+    tokenType tmpOp;
+
+//    tokenType::tokenTypes type;
+//    tokenType::associativityType ass;
+
+    /* NUMBERS */
+    // 0
+
+    for (int i=0; i<10; ++i)
+    {
+        tmpOp.type(tmpOp.NUMBER);
+        tmpOp.str(QString::number(i));
+        tmpOp.priority(tmpOp.NONE);
+        tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+        tokenList.append(tmpOp);
+        tmpOp.clear();
+    }
+
+    // sum
+    tmpOp.type(tmpOp.OPERATOR);
+    tmpOp.str("+");
+    tmpOp.priority(tmpOp.AS);
+    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // subtraction
+    tmpOp.type(tmpOp.OPERATOR);
+    tmpOp.str("-");
+    tmpOp.priority(tmpOp.AS);
+    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // moltiplication
+    tmpOp.type(tmpOp.OPERATOR);
+    tmpOp.str("*");
+    tmpOp.priority(tmpOp.MD);
+    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // Division
+    tmpOp.type(tmpOp.OPERATOR);
+    tmpOp.str("/");
+    tmpOp.priority(tmpOp.MD);
+    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // power
+    tmpOp.type(tmpOp.OPERATOR);
+    tmpOp.str("^");
+    tmpOp.priority(tmpOp.E);
+    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // square root
+    tmpOp.type(tmpOp.FUNCTION);
+    tmpOp.str("sqrt");
+    tmpOp.priority(tmpOp.E);
+    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // open brackets
+    tmpOp.type(tmpOp.BRACKETS);
+    tmpOp.str("(");
+    tmpOp.priority(tmpOp.BRACKETS);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // close brackets
+    tmpOp.type(tmpOp.BRACKETS);
+    tmpOp.str(")");
+    tmpOp.priority(tmpOp.BRACKETS);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // Square brackets open
+    tmpOp.type(tmpOp.BRACKETS);
+    tmpOp.str("[");
+    tmpOp.priority(tmpOp.SQUARE_BRACKETS);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // Square brackets close
+    tmpOp.type(tmpOp.BRACKETS);
+    tmpOp.str("]");
+    tmpOp.priority(tmpOp.SQUARE_BRACKETS);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // Curly brackets open
+    tmpOp.type(tmpOp.BRACKETS);
+    tmpOp.str("{");
+    tmpOp.priority(tmpOp.CURLY_BRACKETS);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // Curly brackets close
+    tmpOp.type(tmpOp.BRACKETS);
+    tmpOp.str("}");
+    tmpOp.priority(tmpOp.CURLY_BRACKETS);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // Dot
+    tmpOp.type(tmpOp.SEPARATOR);
+    tmpOp.str(".");
+    tmpOp.priority(tmpOp.NUMBER);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // Comma
+    tmpOp.type(tmpOp.SEPARATOR);
+    tmpOp.str(",");
+    tmpOp.priority(tmpOp.NUMBER);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // x
+    tmpOp.type(tmpOp.VARIABLE);
+    tmpOp.str("x");
+    tmpOp.priority(tmpOp.NONE);
+    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
+
+    tokenList.append(tmpOp);
+    tmpOp.clear();
+
+    // other operators...
 }

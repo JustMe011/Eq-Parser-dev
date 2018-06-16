@@ -24,48 +24,57 @@ tokenType::tokenType()
 
 /* setter methods */
 
-int tokenType::setTokenCode(int code)
-{
-    /* It return 0 if success or !0 otherwise */
-    if (code < 0)
-        return 1;
-    this->tokenCode = code;
-    return 0;
-}
-
-void tokenType::setTokenStr(QString opcode)
+void tokenType::str(QString opcode)
 {
     this->tokenStr = opcode;
 }
 
-void tokenType::setTokenType(tokenTypes tokType)
+void tokenType::type(tokenTypes tokType)
 {
     this->tokenTypeCode = tokType;
 }
 
-void tokenType::setTokenAssociativity(associativityType AssocType)
+void tokenType::associativity(associativityType AssocType)
 {
     this->tokenAssociativity = AssocType;
 }
 
+void tokenType::priority (order opOrder)
+{
+    this->opPriority = opOrder;
+}
+
 /* getter methods */
 
-int tokenType::getTokenCode()
+int tokenType::getCode()
 {
     return tokenCode;
 }
 
-QString tokenType::getTokenStr()
+QString tokenType::getStr()
 {
     return tokenStr;
 }
 
-tokenType::tokenTypes tokenType::getTokenType()
+tokenType::tokenCodes tokenType::getType()
 {
-    return tokenTypeCode;
+    return tokenCode;
 }
 
-tokenType::associativityType tokenType::getTokenAssociativity()
+tokenType::associativityType tokenType::getAssociativity()
 {
     return tokenAssociativity;
 }
+
+tokenType::order tokenType::getPriority()
+{
+    return opPriority;
+}
+
+void tokenType::clear()
+{
+    tokenCode = EMPTY;
+    tokenStr = tokenStr.clear();
+    tokenAssociativity = NON_ASSOCIATIVE;
+}
+

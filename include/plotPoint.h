@@ -18,16 +18,15 @@ public:
     };
 
     int addData (double value, type typeVector);
-    int clearData (type typeVector = 2);
-    QVector getValues (type typeVector, bool endAtShortest = true);
+    int clearData (type typeVector = ALL);
+    QVector<double> getValues (type typeVector, bool endAtShortest = true);
     int getLenght (type typeVector);
 
 private:
-// xp,yp
     int status;
     bool foundData;
     const int UNKNOWN_VEC_TYPE = -1;
-    const int STORED_LENGTH = 2;
+    static const int STORED_LENGTH = 2;
     struct pointType{
         int idType;
         QList<double> listData;
@@ -36,7 +35,7 @@ private:
     };
     typedef struct pointType pointTypes;
     pointTypes storedData[STORED_LENGTH];
-    int getShortestLength (pointType * points);
+    int getShortestLength ();
 
 
 };

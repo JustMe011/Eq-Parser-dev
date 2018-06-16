@@ -15,7 +15,7 @@ int plotPoint::addData (double value, type typeVector)
     {
         pointTypes currEl = storedData[i];
         if (typeVector == currEl.idType){
-            currEl.listData.append(vaue);
+            currEl.listData.append(value);
             foundData = true;
         }
     }
@@ -24,7 +24,7 @@ int plotPoint::addData (double value, type typeVector)
     return status;
 }
 
-int plotPoint::clearData (type typeVector = 2)
+int plotPoint::clearData (type typeVector)
 {
     status = EXIT_SUCCESS;
 
@@ -41,18 +41,21 @@ int plotPoint::clearData (type typeVector = 2)
     return status;
 }
 
-QVector plotPoint::getValues (type typeVector, bool endAtShortest = true)
+QVector<double> plotPoint::getValues (type typeVector, bool endAtShortest)
 {
     /* At the moment you can get ONE vector at the time ->
      * ALL the vectors in a future implementation
      * right now the software force you to end at the shortest list
      */
-
+    int shortest;
+    QVector<double> outVector;
     status = EXIT_SUCCESS;
-    pointTypes tmpData[STORED_LENGTH] = storedData;
+    if (!endAtShortest)
+        status = UNKNOWN_VEC_TYPE;
+    //pointTypes tmpData[STORED_LENGTH] = storedData;
 
     /* look for the shortest list */
-
+    shortest = getShortestLength();
     for (int i=0; i < STORED_LENGTH; ++i )
     {
         pointTypes currEl = storedData[i];
@@ -64,19 +67,26 @@ QVector plotPoint::getValues (type typeVector, bool endAtShortest = true)
 
         if (typeVector == currEl.idType){
             currEl.VectorData = currEl.listData.toVector();
+            outVector = currEl.VectorData;
             foundData = true;
         }
     }
+    if (!foundData)
+        status = UNKNOWN_VEC_TYPE;
+    /* status variable for future implementations */
 
+    return outVector;
 }
 
-int plotPoint::getShortestLength (pointType *points)
+int plotPoint::getShortestLength ()
 {
-    int shortest = points[0].listData.length();
+    int currLength;
+    int shortest = storedData[0].listData.length();
     for (int i=0; i < STORED_LENGTH; ++i )
     {
-        if (shortest > points[i].listData.length())
-            shortest = points[i].listData.length();
+        currLength = storedData[i].listData.length();
+        if (shortest > currLength)
+            shortest = currLength;
     }
     return shortest;
 }
