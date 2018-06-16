@@ -29,7 +29,8 @@ SOURCES += \
     src/main.cpp \
     src/plotPoint.cpp \
     src/tokenType.cpp \
-    src/wid.cpp
+    src/wid.cpp \
+    src/calcs.cpp
 
 
 
@@ -37,7 +38,8 @@ HEADERS += \
     include/eqParser.h \
     include/plotPoint.h \
     include/tokenType.h \
-    include/wid.h
+    include/wid.h \
+    include/calcs.h
 
 
 
