@@ -36,21 +36,23 @@ private:
     tokenType * getElement (QString read); /* return the element from tokenList we're handling */
 
     // RPN
+    struct outStruct
+    {
+        tokenType * tokenOut;
+        unsigned int opCode;
+    };
+
     QChar readChar;
     const int NON_NUMBER_OPCODE = -1;
     QList<tokenType> tokenList; /* List of operators */
-    QStack<tokenType> * opStack;
+    QStack<tokenType> *opStack;
     //QQueue<tokenType> * opOut;
     QQueue<struct outStruct> opOut;
     struct outStruct tmpOut;
 
     int outIndex = 0;
 
-    struct outStruct
-    {
-        tokenType * tokenOut;
-        unsigned int opCode;
-    };
+
 
     void appendOut (tokenType * toEnqueue);
 };

@@ -8,7 +8,7 @@
 class tokenType
 {
 public:
-    tokenType(tokenTypes type, QString opcode, associativityType ass = NON_ASSOCIATIVE);
+    tokenType();
     ~tokenType();
 
     /* Numbers inside tokeTypes indicate the priority of the operator
