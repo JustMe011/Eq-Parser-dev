@@ -28,13 +28,8 @@ void eqParser::solveEq (QString equation)
 
 }
 
-QList<tokenType> * eqParser::getRPN (QString equation)
+QList<tokenType> * eqParser::getRPN (QString eqString)
 {
-    tokenType * lastEl, currentEl;
-
-    eqString = equation;
-    wString = eqString;
-    tokenize();
 
     /*****    algorithm to generate RPN    *****
      *
@@ -45,14 +40,18 @@ QList<tokenType> * eqParser::getRPN (QString equation)
      * if i read a number, a separator and a number again I have to compose a decimal number
      *
      *****                                 *****/
+    tokenType * lastEl, currentEl;
+    bool    expectingOp =false,
+            finishRead = false,
+            tokenFound = false;
+    int strIndex = 0;
 
-    tokenType * tmpEl;
-    bool expectingOp =false;
-
-    for (int i=0; i < wString.length(); ++i)
-    {
-        readChar = wString.at(i);
-        currentEl = getElement(readChar);
+    wString = eqString;
+    tokenize();
+    for (int strIndex=0; strIndex < wString.length(); ++strIndex){
+        currentEl = getElement(wString.at(strIndex));
+        if (0 == strIndex)
+            lastEl = currentEl;
 
         switch (currentEl.getType())
         {
@@ -60,9 +59,20 @@ QList<tokenType> * eqParser::getRPN (QString equation)
             if (expectingOp)
                 std::cout << "Error: two operators near" << std::endl;
             // push to queue
-            opOut->enqueue(currentEl);
-            expectingOp = true;
+            //opOut->enqueue(currentEl);
+            appendOut(currentEl);
+
+            /*expectingOp = true; -> look at the beginning of the OPERATOR case */
             break;
+
+        case tokenType::SEPARATOR:
+            /* similiar to the number */
+            if (expectingOp)
+                std::cout << "Error: two operators near" << std::endl;
+            appendOut(currentEl);
+            expectingOp = false;
+            break;
+
         case tokenType::OPEN_BRACKET:
             if (expectingOp)
                 std::cout << "Error: Need an operator before open bracket" << std::endl;
@@ -76,15 +86,18 @@ QList<tokenType> * eqParser::getRPN (QString equation)
                 std::cout << "Error: you can't have an operator before or after a bracket"
                           << std::endl;
             // pop stack to queue until it founds a "("
-            while ("(" != opStack->top() && !opStack->empty())
-                opOut->enqueue(opStack->pop());
+            while ("(" != opStack->top() && !opStack->empty()){
+                //opOut->enqueue(opStack->pop());
+                appendOut(opStack->pop());
+            }
 
             // now I have to pop the open bracket
             if (opStack->empty())
                 std::cout << "Error: missing open bracket" << std::endl;
-            opOut->enqueue(opStack->pop());
+            appendOut(opStack->pop());
             expectingOp = true;
             break;
+
         case   (tokenType::POWER          ||
                 tokenType::ROOT           ||
                 tokenType::MOLTIPLICATION ||
@@ -93,20 +106,29 @@ QList<tokenType> * eqParser::getRPN (QString equation)
                 tokenType::SUBTRACTION):
             /* basic operators */
             /* move all element with higher precedence: */
-            if (!expectingOp)
-                std::cout << "Error: Unexpected operator" << std::endl;
+            //if (!expectingOp)
+            //    std::cout << "Error: Unexpected operator" << std::endl;
+            if (tokenType::NUMBER == lastEl->getType())
+                expectingOp = true;
             while (opStack->top().getPriority() < currentEl.getPriority() &&
                    opStack->top().isOperator()                            &&
-                   !opStack->empty())
-                opOut->enqueue(opStack->pop());
+                   !opStack->empty()){
+                //opOut->enqueue(opStack->pop());
+                appendOut(opStack->pop());
+            }
             opStack->push(currentEl);
+
+            /* increment operator opCode */
+            outIndex++;
             expectingOp = false;
             break;
         default:
             std::cout << "Error: Unexpected token" << std::endl;
             break;
         }
-    }
+        lastEl = currentEl; /* Update lastEl */
+ } /* end for */
+
     /* finish read tokens, now I have to push all the tack on the queue.
      * Now, if I read a open bracket (and I've finished to read tokens)
      * it means that I can't close that bracket -> ERROR
@@ -220,7 +242,7 @@ void eqParser::printEquation()
 int eqParser::pow10 (int n)
 {
     static const int maxPow = 10;
-    static int powers[maxPow]=
+    static int powsLUT[maxPow]=
     {
         0.0000000001,
         0.000000001,
@@ -243,7 +265,7 @@ int eqParser::pow10 (int n)
         100000000,
         1000000000
     };
-    return powers[n+maxPow];
+    return powsLUT[n+maxPow];
 }
 
 
@@ -263,4 +285,10 @@ void eqParser::fillOps()
     tokenList.append(tokenType(tokenType::POWER,"^"));
 }
 
+void eqParser::appendOut (tokenType *toEnqueue)
+{
+    tmpOut.tokenOut = toEnqueue;
+    tmpOut.opCode = outIndex;
+    opOut.enqueue(tmpOut);
 
+}

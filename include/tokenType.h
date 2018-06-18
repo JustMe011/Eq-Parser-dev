@@ -18,6 +18,7 @@ public:
     enum tokenTypes
     {
         NUMBER,
+        SEPARATOR,
         OPEN_BRACKET, /* we think brackets as special token without priority */
         CLOSE_BRACKET,
         POWER = 10,
