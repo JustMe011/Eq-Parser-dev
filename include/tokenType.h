@@ -3,25 +3,32 @@
 
 #include <QObject>
 #include <iostream>
+#include <cmath>
 
 class tokenType
 {
 public:
-    tokenType();
+    tokenType(tokenTypes type, QString opcode, associativityType ass = NON_ASSOCIATIVE);
     ~tokenType();
 
+    /* Numbers inside tokeTypes indicate the priority of the operator
+     * if two operators have the same decimal digit it means that they have the same
+     * priority.
+     */
     enum tokenTypes
     {
-        EMPTY = -1,
-        NUMBER = 0,
-        OPERATOR = 1,
-        FUNCTION = 2,
-        BRACKETS = 3,
-        SEPARATOR = 4,
-        VARIABLE = 5,
-        OTHER = 6
-        /* Add other types */
+        NUMBER,
+        OPEN_BRACKET, /* we think brackets as special token without priority */
+        CLOSE_BRACKET,
+        POWER = 10,
+        ROOT = 11,
+        MOLTIPLICATION = 20,
+        DIVISION = 21,
+        SUM = 30,
+        SUBTRACTION = 31
+        /* add other types */
     };
+
     enum associativityType
     {
         NON_ASSOCIATIVE = 0,
@@ -29,31 +36,15 @@ public:
         RIGHT_ASSOCIATIVE = 2
     };
 
-    /*
-     * Parentheses,
-     * Exponents Roots,
-     * Multiplication/Division,
-     * Addition/Subtraction
-     */
-    enum order
-    {
-      NONE = -1,
-        CURLY_BRACKETS = 0,
-        SQUARE_BRACKETS = 1,
-        BRACKETS = 2,
-        E = 3,
-        MD = 4,
-        AS = 5
-    };
-
     void str(QString opcode);
     QString getStr();
 
     void type (tokenTypes tokType);
-    tokenTypes getTokenType();
+    tokenTypes getType();
 
-    void priority (order opOrder);
-    order getPriority ();
+    bool isOperator();
+    int getPriority ();
+
 
     void associativity(associativityType AssocType);
     associativityType getAssociativity();
@@ -67,11 +58,14 @@ private:
     /**************************************/
     tokenTypes tokenCode;
     QString tokenStr;
-    order opPriority;
     // need to add pointer to the func
+
+    /* operators only */
     associativityType tokenAssociativity;
 
     /**************************************/
+
+
 
 };
 

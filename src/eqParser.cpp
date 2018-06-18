@@ -30,11 +30,10 @@ void eqParser::solveEq (QString equation)
 
 QList<tokenType> * eqParser::getRPN (QString equation)
 {
-    tokenType lastEl, currentEl;
+    tokenType * lastEl, currentEl;
 
     eqString = equation;
     wString = eqString;
-    eqInserted = true;
     tokenize();
 
     /*****    algorithm to generate RPN    *****
@@ -47,32 +46,92 @@ QList<tokenType> * eqParser::getRPN (QString equation)
      *
      *****                                 *****/
 
-    for (int eqIndex=0; eqIndex < wString.length(); ++eqIndex)
+    tokenType * tmpEl;
+    bool expectingOp =false;
+
+    for (int i=0; i < wString.length(); ++i)
     {
-        readChar = wString.at(eqIndex);
+        readChar = wString.at(i);
         currentEl = getElement(readChar);
-        if (0 == eqIndex)
-            lastEl = getElement(readChar);
-        if (lastEl.getTokenType() == currentEl || 0 == eqIndex)
+
+        switch (currentEl.getType())
         {
-            readBuf->enqueue(currentEl);
+        case tokenType::NUMBER:
+            if (expectingOp)
+                std::cout << "Error: two operators near" << std::endl;
+            // push to queue
+            opOut->enqueue(currentEl);
+            expectingOp = true;
+            break;
+        case tokenType::OPEN_BRACKET:
+            if (expectingOp)
+                std::cout << "Error: Need an operator before open bracket" << std::endl;
+            opStack->push(currentEl);
+            /* after open bracket he doesn't expect an op, so EO -> false,
+             * but for the previous if we know that EO is already false
+             */
+            break;
+        case tokenType::CLOSE_BRACKET:
+            if (!expectingOp)
+                std::cout << "Error: you can't have an operator before or after a bracket"
+                          << std::endl;
+            // pop stack to queue until it founds a "("
+            while ("(" != opStack->top() && !opStack->empty())
+                opOut->enqueue(opStack->pop());
 
+            // now I have to pop the open bracket
+            if (opStack->empty())
+                std::cout << "Error: missing open bracket" << std::endl;
+            opOut->enqueue(opStack->pop());
+            expectingOp = true;
+            break;
+        case   (tokenType::POWER          ||
+                tokenType::ROOT           ||
+                tokenType::MOLTIPLICATION ||
+                tokenType::DIVISION       ||
+                tokenType::SUM            ||
+                tokenType::SUBTRACTION):
+            /* basic operators */
+            /* move all element with higher precedence: */
+            if (!expectingOp)
+                std::cout << "Error: Unexpected operator" << std::endl;
+            while (opStack->top().getPriority() < currentEl.getPriority() &&
+                   opStack->top().isOperator()                            &&
+                   !opStack->empty())
+                opOut->enqueue(opStack->pop());
+            opStack->push(currentEl);
+            expectingOp = false;
+            break;
+        default:
+            std::cout << "Error: Unexpected token" << std::endl;
+            break;
         }
-        /* ora che ho pushato sul buffer, quando poi trovo che currentEl e' diverso da lastEl
-         * posso mandare readBuf su stack/coda in base a se e' operatore o numero (ed eliminare le
-         * parentesi)
-         */
-
-
     }
+    /* finish read tokens, now I have to push all the tack on the queue.
+     * Now, if I read a open bracket (and I've finished to read tokens)
+     * it means that I can't close that bracket -> ERROR
+     */
+    if (!expectingOp)
+        std::cout << "Error, can't end equation with an operator" << std::endl;
+    while (!opStack->empty())
+    {
+        if (tokenType::OPEN_BRACKET == opStack->top().getType())
+            std::cout << "Error: Unbalanced bracket" << std::endl;
+        opOut->enqueue(opStack->pop());
+    }
+    return opOut;
 }
 
 /* END interface */
+bool eqParser::isOperator (tokenType * current)
+{
 
+}
 tokenType * eqParser::getElement (QString read)
 {
+    /* Compare read with tokenType::getstr() to know which token we have */
+
     tokenType * element;
-    /* compare read with tokenType::getstr() to know which token we have */
     for (int i=0; i<tokenList.length(); ++i)
         if (tokenList.at(i).getStr() == read){
             // Found element
@@ -88,17 +147,16 @@ void eqParser::tokenize ()
      * [x] put all letters uppercase
      *
      */
-    std::cout << "wString: " << wString.toStdString() << std::endl;
     QString tmpString = wString;
-    wString = cleanChars(tmpString);
+    wString = cleanChars (tmpString);
 
-    std::cout << "toupper\nwString: " << wString.toStdString() << std::endl;
     tmpString = wString;
-    wString = toUpper(tmpString);
-    std::cout << "wString: " << wString.toStdString() << std::endl;
+    wString = toUpper (tmpString);
 
+    tmpString = wString;
+    wString = toBrackets (tmpString);
     /* to the next steps */
-    printEquation();
+    //printEquation();
 }
 
 QString eqParser::cleanChars (QString str)
@@ -119,6 +177,20 @@ QString eqParser::cleanChars (QString str)
 
         if (std::find(blank.begin(),blank.end(),currentChar) == blank.end())
             outStr.append(str.at(i));
+    }
+    return outStr;
+}
+
+QString eqParser::toBrackets (QString str)
+{
+    /* change curly brackets and square brackets into brackets */
+    QString outStr;
+    foreach (QChar currentChar, str) {
+        if ("[" == currentChar || "{" == currentChar)
+            currentChar = "(";
+        if ("]" == currentChar || "}" == currentChar)
+            currentChar = ")";
+        outStr.append(currentChar);
     }
     return outStr;
 }
@@ -145,161 +217,50 @@ void eqParser::printEquation()
     std::cout << "eq: " << wString.toStdString() << std::endl;
 }
 
+int eqParser::pow10 (int n)
+{
+    static const int maxPow = 10;
+    static int powers[maxPow]=
+    {
+        0.0000000001,
+        0.000000001,
+        0.00000001,
+        0.0000001,
+        0.000001,
+        0.00001,
+        0.0001,
+        0.001,
+        0.01,
+        0.1,
+        1,
+        10,
+        100,
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000,
+        100000000,
+        1000000000
+    };
+    return powers[n+maxPow];
+}
+
+
 void eqParser::fillOps()
 {
-    tokenType tmpOp;
-
-//    tokenType::tokenTypes type;
-//    tokenType::associativityType ass;
-
     /* NUMBERS */
-    // 0
-
-    for (int i=0; i<10; ++i)
+    for (int i=0; i < 10; ++i)
     {
-        tmpOp.type(tmpOp.NUMBER);
-        tmpOp.str(QString::number(i));
-        tmpOp.priority(tmpOp.NONE);
-        tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-        tokenList.append(tmpOp);
-        tmpOp.clear();
+        tokenList.append(tokenType(tokenType::NUMBER,i));
     }
-
-    // sum
-    tmpOp.type(tmpOp.OPERATOR);
-    tmpOp.str("+");
-    tmpOp.priority(tmpOp.AS);
-    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // subtraction
-    tmpOp.type(tmpOp.OPERATOR);
-    tmpOp.str("-");
-    tmpOp.priority(tmpOp.AS);
-    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // moltiplication
-    tmpOp.type(tmpOp.OPERATOR);
-    tmpOp.str("*");
-    tmpOp.priority(tmpOp.MD);
-    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // Division
-    tmpOp.type(tmpOp.OPERATOR);
-    tmpOp.str("/");
-    tmpOp.priority(tmpOp.MD);
-    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // power
-    tmpOp.type(tmpOp.OPERATOR);
-    tmpOp.str("^");
-    tmpOp.priority(tmpOp.E);
-    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // square root
-    tmpOp.type(tmpOp.FUNCTION);
-    tmpOp.str("sqrt");
-    tmpOp.priority(tmpOp.E);
-    tmpOp.associativity(tmpOp.LEFT_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // open brackets
-    tmpOp.type(tmpOp.BRACKETS);
-    tmpOp.str("(");
-    tmpOp.priority(tmpOp.BRACKETS);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // close brackets
-    tmpOp.type(tmpOp.BRACKETS);
-    tmpOp.str(")");
-    tmpOp.priority(tmpOp.BRACKETS);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // Square brackets open
-    tmpOp.type(tmpOp.BRACKETS);
-    tmpOp.str("[");
-    tmpOp.priority(tmpOp.SQUARE_BRACKETS);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // Square brackets close
-    tmpOp.type(tmpOp.BRACKETS);
-    tmpOp.str("]");
-    tmpOp.priority(tmpOp.SQUARE_BRACKETS);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // Curly brackets open
-    tmpOp.type(tmpOp.BRACKETS);
-    tmpOp.str("{");
-    tmpOp.priority(tmpOp.CURLY_BRACKETS);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // Curly brackets close
-    tmpOp.type(tmpOp.BRACKETS);
-    tmpOp.str("}");
-    tmpOp.priority(tmpOp.CURLY_BRACKETS);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // Dot
-    tmpOp.type(tmpOp.SEPARATOR);
-    tmpOp.str(".");
-    tmpOp.priority(tmpOp.NUMBER);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // Comma
-    tmpOp.type(tmpOp.SEPARATOR);
-    tmpOp.str(",");
-    tmpOp.priority(tmpOp.NUMBER);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // x
-    tmpOp.type(tmpOp.VARIABLE);
-    tmpOp.str("x");
-    tmpOp.priority(tmpOp.NONE);
-    tmpOp.associativity(tmpOp.NON_ASSOCIATIVE);
-
-    tokenList.append(tmpOp);
-    tmpOp.clear();
-
-    // other operators...
+    tokenList.append(tokenType(tokenType::SUM,"+"));
+    tokenList.append(tokenType(tokenType::SUBTRACTION,"-"));
+    tokenList.append(tokenType(tokenType::MOLTIPLICATION,"*"));
+    tokenList.append(tokenType(tokenType::DIVISION,"/"));
+    tokenList.append(tokenType(tokenType::OPEN_BRACKET,"("));
+    tokenList.append(tokenType(tokenType::CLOSE_BRACKET,")"));
+    tokenList.append(tokenType(tokenType::POWER,"^"));
 }
+
+

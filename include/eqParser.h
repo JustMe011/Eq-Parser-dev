@@ -25,22 +25,25 @@ private:
     bool eqInserted = false;
     QString eqString;
     QString wString;
-    QList<tokenType> tokenList; /* List of operators */
-    QStack<tokenType> * opStack;
-    QQueue<tokenType> * opOut;
+
 
     void tokenize();
     QString cleanChars(QString str);
     QString toUpper(QString str);
+    QString toBrackets(QString str);
     bool isLetter(QChar currentChar);
     void printEquation();
     void fillOps();
+    int pow10 (int n); /* power of 10 calculator based on LUT */
+    double toNumber (QQueue<tokenType> * buf);
+    tokenType * getElement (QString read); /* return the element from tokenList we're handling */
 
     // RPN
     QChar readChar;
     QQueue<tokenType> * readBuf;
-
-    tokenType * getElement (QString read);
+    QList<tokenType> tokenList; /* List of operators */
+    QStack<tokenType> * opStack;
+    QQueue<tokenType> * opOut;
 };
 
 #endif // EQPARSER_H
