@@ -36,7 +36,7 @@ private:
 
 
     QChar readChar;
-    const int NON_NUMBER_OPCODE = -1;
+    int NON_NUMBER_OPCODE = -1;
     QList<tokenType> tokenList; /* List of operators */
     QStack<tokenType*> opStack;
     //QQueue<tokenType> * opOut;
@@ -44,10 +44,8 @@ private:
     struct outStruct tmpOut;
 
     int outIndex = 0;
-
-
-
     void appendOut (tokenType * toEnqueue);
+
 
 public:
     eqParser();
@@ -56,8 +54,9 @@ public:
 
     //void getEquation (QString equation);
     QQueue<struct outStruct>  getRPN(QString eqString);
-    void solveEq (QString equation);
-    void solveEq(QList<tokenType> * RPN);
+    void showRPN(QString eqString);
+    void solveEq (QString eqString);
+    void solveEq(QQueue<struct outStruct> RPN);
 
 };
 

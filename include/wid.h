@@ -19,13 +19,14 @@ public:
 
 private:
     Ui::wid *ui;
-    tokenType *token1 = new tokenType;
-    eqParser *parser;
+    tokenType *token1;
+    eqParser parser;
 
     void setTokenSample();
     void writeTokenSample();
 private slots:
-    void on_getEqBtn_pressed();
+    void on_getEqBtn_clicked();
+    void on_getEqBtn_released();
 
 };
 

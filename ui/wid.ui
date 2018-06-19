@@ -55,22 +55,40 @@
  <connections>
   <connection>
    <sender>getEqBtn</sender>
-   <signal>pressed()</signal>
+   <signal>clicked()</signal>
    <receiver>wid</receiver>
-   <slot>on_getEqBtn_pressed()</slot>
+   <slot>on_getEqBtn_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>297</x>
-     <y>135</y>
+     <x>287</x>
+     <y>138</y>
     </hint>
     <hint type="destinationlabel">
-     <x>290</x>
-     <y>405</y>
+     <x>365</x>
+     <y>421</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>getEqBtn</sender>
+   <signal>released()</signal>
+   <receiver>wid</receiver>
+   <slot>on_getEqBtn_released()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>308</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>337</x>
+     <y>414</y>
     </hint>
    </hints>
   </connection>
  </connections>
  <slots>
   <slot>on_getEqBtn_pressed()</slot>
+  <slot>on_getEqBtn_clicked()</slot>
+  <slot>on_getEqBtn_released()</slot>
  </slots>
 </ui>

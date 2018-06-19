@@ -27,6 +27,16 @@
 
 
 //}
+eqParser::eqParser()
+{
+    fillOps();
+}
+
+eqParser::~eqParser()
+{
+
+}
+
 
 QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
 {
@@ -44,8 +54,14 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
                 *currentEl;
     bool    expectingOp =false;
 
+    std::cout << "getRPN called" << std::endl;
+    std::cout << "eqString: " << eqString.toStdString() << std::endl;
+
+    //wString = eqString;
     wString = eqString;
+
     tokenize();
+    std::cout << "tokenized str: " << wString.toStdString() << std::endl;
     for (int strIndex=0; strIndex < wString.length(); ++strIndex){
         currentEl = getElement(wString.at(strIndex));
         if (0 == strIndex)
@@ -108,11 +124,15 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
             //    std::cout << "Error: Unexpected operator" << std::endl;
             if (tokenType::NUMBER == lastEl->getType())
                 expectingOp = true;
-            while (opStack.top()->getPriority() < currentEl->getPriority() &&
-                   opStack.top()->isOperator()                             &&
-                   !opStack.empty()){
-                //opOut->enqueue(opStack->pop());
-                appendOut(opStack.pop());
+            if (!expectingOp)
+                std::cout << "Error: Unexpected operator" << std::endl;
+            if (!opStack.empty()){
+                while ((opStack.top()->getPriority() < currentEl->getPriority()) &&
+                    opStack.top()->isOperator()                             &&
+                    !opStack.empty()){
+                    //opOut->enqueue(opStack->pop());
+                    appendOut(opStack.pop());
+                }
             }
             opStack.push(currentEl);
 
@@ -132,7 +152,7 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
      * Now, if I read a open bracket (and I've finished to read tokens)
      * it means that I can't close that bracket -> ERROR
      */
-    if (!expectingOp)
+    if (expectingOp)
         std::cout << "Error, can't end equation with an operator" << std::endl;
     while (!opStack.empty())
     {
@@ -311,8 +331,22 @@ void eqParser::fillOps()
 
 void eqParser::appendOut (tokenType *toEnqueue)
 {
+    /* create struct element for output queue */
     tmpOut.tokenOut = toEnqueue;
-    tmpOut.opCode = outIndex;
+    tmpOut.opCode =(tokenType::NUMBER == toEnqueue->getType()   ||
+        tokenType::SEPARATOR == toEnqueue->getType()) ? outIndex : NON_NUMBER_OPCODE;
     opOut.enqueue(tmpOut);
-
 }
+
+void eqParser::showRPN (QString eqString)
+{
+    QQueue<struct outStruct> RPN = getRPN(eqString);
+    std::cout << "RPN length: " << RPN.length() << std::endl;
+
+    for (int i=0; i < RPN.length(); ++i){
+        std::cout << "element: " << RPN.at(i).tokenOut->getStr().toStdString() << std::endl;
+        std::cout << "op number: " << QString::number(RPN.at(i).opCode).toStdString() << std::endl;
+        std::cout << std::endl << std::endl;
+    }
+}
+

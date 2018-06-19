@@ -9,6 +9,7 @@ wid::wid(QWidget *parent) :
     ui->setupUi(this);
     //setTokenSample();
 
+
 }
 
 wid::~wid()
@@ -40,12 +41,21 @@ void wid::writeTokenSample()
 
 }
 
-void wid::on_getEqBtn_pressed()
+void wid::on_getEqBtn_clicked()
 {
+
     QString eq;
     eq = ui->insertedTxt->text();
     //parser = new eqParser();
-    parser->getRPN(eq);
+    //parser->getRPN(eq);
+    //parser->showRPN(eq);
+    parser.showRPN(eq);
+    //ui->getEqBtn->setDisabled(true);
 
     std::cout << "str: " << eq.toStdString() << std::endl;
+}
+
+void wid::on_getEqBtn_released()
+{
+    //ui->getEqBtn->setDisabled(false);
 }
