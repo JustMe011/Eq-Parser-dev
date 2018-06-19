@@ -28,7 +28,7 @@
 
 //}
 
-QList<tokenType> * eqParser::getRPN (QString eqString)
+QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
 {
 
     /*****    algorithm to generate RPN    *****
@@ -73,7 +73,7 @@ QList<tokenType> * eqParser::getRPN (QString eqString)
         {
             if (expectingOp)
                 std::cout << "Error: Need an operator before open bracket" << std::endl;
-            opStack->push(currentEl);
+            opStack.push(currentEl);
             /* after open bracket he doesn't expect an op, so EO -> false,
              * but for the previous if we know that EO is already false
              */
@@ -84,15 +84,15 @@ QList<tokenType> * eqParser::getRPN (QString eqString)
                 std::cout << "Error: you can't have an operator before or after a bracket"
                           << std::endl;
             // pop stack to queue until it founds a "("
-            while ("(" != opStack->top() && !opStack->empty()){
+            while ("(" != opStack.top()->getStr() && !opStack.empty()){
                 //opOut->enqueue(opStack->pop());
-                appendOut(opStack->pop());
+                appendOut(opStack.pop());
             }
 
             // now I have to pop the open bracket
-            if (opStack->empty())
+            if (opStack.empty())
                 std::cout << "Error: missing open bracket" << std::endl;
-            appendOut(opStack->pop());
+            appendOut(opStack.pop());
             expectingOp = true;
         }
         else if (   tokenType::POWER == currentEl->getType()            ||
@@ -108,13 +108,13 @@ QList<tokenType> * eqParser::getRPN (QString eqString)
             //    std::cout << "Error: Unexpected operator" << std::endl;
             if (tokenType::NUMBER == lastEl->getType())
                 expectingOp = true;
-            while (opStack->top().getPriority() < currentEl.getPriority() &&
-                   opStack->top().isOperator()                            &&
-                   !opStack->empty()){
+            while (opStack.top()->getPriority() < currentEl->getPriority() &&
+                   opStack.top()->isOperator()                             &&
+                   !opStack.empty()){
                 //opOut->enqueue(opStack->pop());
-                appendOut(opStack->pop());
+                appendOut(opStack.pop());
             }
-            opStack->push(currentEl);
+            opStack.push(currentEl);
 
             /* increment operator opCode */
             outIndex++;
@@ -134,12 +134,12 @@ QList<tokenType> * eqParser::getRPN (QString eqString)
      */
     if (!expectingOp)
         std::cout << "Error, can't end equation with an operator" << std::endl;
-    while (!opStack->empty())
+    while (!opStack.empty())
     {
-        if (tokenType::OPEN_BRACKET == opStack->top().getType())
+        if (tokenType::OPEN_BRACKET == opStack.top()->getType())
             std::cout << "Error: Unbalanced bracket" << std::endl;
         //opOut->enqueue(opStack->pop());
-        appendOut(opStack->pop());
+        appendOut(opStack.pop());
     }
     return opOut;
 }
@@ -205,10 +205,10 @@ QString eqParser::toBrackets (QString str)
     /* change curly brackets and square brackets into brackets */
     QString outStr;
     foreach (QChar currentChar, str) {
-        if ("[" == currentChar || "{" == currentChar)
-            currentChar = "(";
-        if ("]" == currentChar || "}" == currentChar)
-            currentChar = ")";
+        if (QLatin1Char('[') == currentChar || QLatin1Char('{') == currentChar)
+            currentChar = QLatin1Char('(');
+        if (QLatin1Char(']') == currentChar || QLatin1Char('}') == currentChar)
+            currentChar = QLatin1Char(')');
         outStr.append(currentChar);
     }
     return outStr;
@@ -238,8 +238,8 @@ void eqParser::printEquation()
 
 int eqParser::pow10 (int n)
 {
-    static const int maxPow = 10;
-    static int powsLUT[maxPow]=
+    static const int shift = 10;
+    static double powsLUT[20]=
     {
         0.0000000001,
         0.000000001,
@@ -262,24 +262,51 @@ int eqParser::pow10 (int n)
         100000000,
         1000000000
     };
-    return powsLUT[n+maxPow];
+    return powsLUT[n+shift];
 }
 
 
 void eqParser::fillOps()
 {
+    const int elements = 7;
+    tokenType tmpEl;
+    tokenType::tokenTypes opTypes[elements] =
+    {
+        tokenType::SUM,
+        tokenType::SUBTRACTION,
+        tokenType::MOLTIPLICATION,
+        tokenType::DIVISION,
+        tokenType::OPEN_BRACKET,
+        tokenType::CLOSE_BRACKET,
+        tokenType::POWER
+    };
+    QString opStr[elements]
+    {
+        "+",
+        "-",
+        "*",
+        "/",
+        "(",
+        ")",
+        "^"
+    };
+
     /* NUMBERS */
     for (int i=0; i < 10; ++i)
     {
-        tokenList.append(tokenType(tokenType::NUMBER,i));
+        //tokenList.append(tokenType(tokenType::NUMBER,i));
+        tmpEl.type(tokenType::NUMBER);
+        tmpEl.str(QString::number(i));
+        tmpEl.associativity(tokenType::NON_ASSOCIATIVE);
+        tokenList.append(tmpEl);
     }
-    tokenList.append(tokenType(tokenType::SUM,"+"));
-    tokenList.append(tokenType(tokenType::SUBTRACTION,"-"));
-    tokenList.append(tokenType(tokenType::MOLTIPLICATION,"*"));
-    tokenList.append(tokenType(tokenType::DIVISION,"/"));
-    tokenList.append(tokenType(tokenType::OPEN_BRACKET,"("));
-    tokenList.append(tokenType(tokenType::CLOSE_BRACKET,")"));
-    tokenList.append(tokenType(tokenType::POWER,"^"));
+    for (int i=0; i < elements; ++i)
+    {
+        tmpEl.type(opTypes[i]);
+        tmpEl.str(opStr[i]);
+        tmpEl.associativity(tokenType::NON_ASSOCIATIVE);
+        tokenList.append(tmpEl);
+    }
 }
 
 void eqParser::appendOut (tokenType *toEnqueue)

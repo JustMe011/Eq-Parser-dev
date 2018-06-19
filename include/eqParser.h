@@ -11,17 +11,14 @@
 
 class eqParser
 {
-public:
-    eqParser();
-    ~eqParser();
-
-
-    //void getEquation (QString equation);
-    QList<tokenType> * getRPN(QString equation);
-    void solveEq (QString equation);
-    void solveEq(QList<tokenType> * RPN);
 
 private:
+    struct outStruct
+    {
+        tokenType * tokenOut;
+        unsigned int opCode;
+    };
+
     QString wString;
 
     void tokenize();
@@ -32,20 +29,16 @@ private:
     void printEquation();
     void fillOps();
     int pow10 (int n); /* power of 10 calculator based on LUT */
-    double toNumber (QQueue<tokenType> * buf);
+    double toNumber (QQueue<tokenType>  buf);
     tokenType * getElement (QString read); /* return the element from tokenList we're handling */
 
     // RPN
-    struct outStruct
-    {
-        tokenType * tokenOut;
-        unsigned int opCode;
-    };
+
 
     QChar readChar;
     const int NON_NUMBER_OPCODE = -1;
     QList<tokenType> tokenList; /* List of operators */
-    QStack<tokenType> *opStack;
+    QStack<tokenType*> opStack;
     //QQueue<tokenType> * opOut;
     QQueue<struct outStruct> opOut;
     struct outStruct tmpOut;
@@ -55,6 +48,17 @@ private:
 
 
     void appendOut (tokenType * toEnqueue);
+
+public:
+    eqParser();
+    ~eqParser();
+
+
+    //void getEquation (QString equation);
+    QQueue<struct outStruct>  getRPN(QString eqString);
+    void solveEq (QString equation);
+    void solveEq(QList<tokenType> * RPN);
+
 };
 
 #endif // EQPARSER_H

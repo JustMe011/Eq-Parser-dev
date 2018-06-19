@@ -1,14 +1,14 @@
 #include "tokenType.h"
 
-tokenType::tokenType(tokenTypes type, QString opcode, associativityType ass)
+tokenType::tokenType()
 {
-    this->type(type);
-    this->str(opcode);
-    this->associativity(ass);
+    std::cout << "Created new token." << std::endl;
 }
 
+tokenType::~tokenType()
+{
 
-
+}
 /* setter methods */
 
 void tokenType::str(QString opcode)
@@ -18,7 +18,7 @@ void tokenType::str(QString opcode)
 
 void tokenType::type(tokenTypes tokType)
 {
-    this->tokenTypeCode = tokType;
+    this->tokenCode = tokType;
 }
 
 void tokenType::associativity(associativityType AssocType)
@@ -28,17 +28,12 @@ void tokenType::associativity(associativityType AssocType)
 
 /* getter methods */
 
-int tokenType::getCode()
-{
-    return tokenCode;
-}
-
 QString tokenType::getStr()
 {
     return tokenStr;
 }
 
-tokenType::tokenCodes tokenType::getType()
+tokenType::tokenTypes tokenType::getType()
 {
     return tokenCode;
 }
@@ -55,14 +50,13 @@ bool tokenType::isOperator()
 
 void tokenType::clear()
 {
-    tokenCode = EMPTY;
-    tokenStr = tokenStr.clear();
+    tokenStr.clear();
     tokenAssociativity = NON_ASSOCIATIVE;
 }
 
 /* END GETTER METHODS */
 
-tokenType::order tokenType::getPriority()
+int tokenType::getPriority()
 {
     return floor(tokenCode / 10);
 }

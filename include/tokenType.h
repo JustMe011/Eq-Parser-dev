@@ -21,6 +21,7 @@ public:
         SEPARATOR,
         OPEN_BRACKET, /* we think brackets as special token without priority */
         CLOSE_BRACKET,
+        OTHER,
         POWER = 10,
         ROOT = 11,
         MOLTIPLICATION = 20,

@@ -93,8 +93,8 @@ int plotPoint::getShortestLength ()
 
 int plotPoint::getLenght (type typeVector)
 {
-    int listLength;
-    int outVal;
+    int     listLength,
+            outVal;
     for (int i=0; i < STORED_LENGTH; ++i )
     {
         pointTypes currEl = storedData[i];

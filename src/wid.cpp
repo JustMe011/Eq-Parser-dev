@@ -22,11 +22,10 @@ void wid::setTokenSample()
    // tokenType::tokenTypes types = tokenType::OTHER;
     //tokenType::associativityType ass = NON_ASSOCIATIVE;
 
-    QString test = "ciao";
-    token1->setTokenCode(0);
-    token1->setTokenStr(test);
-    token1->setTokenType(tokenType::OTHER);
-    token1->setTokenAssociativity(tokenType::NON_ASSOCIATIVE);
+    QString test = "A";
+    token1->str(test);
+    token1->type(tokenType::OTHER);
+    token1->associativity(tokenType::NON_ASSOCIATIVE);
 
     writeTokenSample();
 }
@@ -34,10 +33,9 @@ void wid::setTokenSample()
 void wid::writeTokenSample()
 {
 
-    std::cout << "token code " << token1->getTokenCode() << std::endl;
-    std::cout << "token str " << token1->getTokenStr().toStdString() << std::endl;
-    std::cout << "token type " << token1->getTokenType() << std::endl;
-    std::cout << "token ass " << token1->getTokenAssociativity() << std::endl;
+    std::cout << "token str " << token1->getStr().toStdString() << std::endl;
+    std::cout << "token type " << token1->getType() << std::endl;
+    std::cout << "token ass " << token1->getAssociativity() << std::endl;
 
 
 }
