@@ -66,6 +66,7 @@ public:
     void showRPN(QString eqString);
     void solveEq (QString eqString);
     void solveEq(QQueue<struct outStruct> RPN);
+    void reset();
 
 };
 

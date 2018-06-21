@@ -24,7 +24,7 @@
 //    * for the domain look into tokenList List -> it has an another property which say the
 //    * density point
 //    */
-
+//  reset();
 
 //}
 eqParser::eqParser()
@@ -91,7 +91,6 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
                 std::cout << "Error: two operators near" << std::endl;
             // push to queue
             //opOut->enqueue(currentEl);
-            expectingOp = true;
             appendOut(currentEl);
 
             /*expectingOp = true; -> look at the beginning of the OPERATOR case */
@@ -111,13 +110,16 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
             else if (tokenType::CLOSE_BRACKET == currentEl->getType()){
                 if (bufferingFunc)
                     bufferingFunc ^= 1;
-                if (!expectingOp)
+                if (tokenType::OPERATOR == lastEl->getFamily()  ||
+                    tokenType::FUNCTION == lastEl->getFamily())
                     std::cout << "Error: you can't have an operator before or after a bracket"
                               << std::endl;
                 // pop stack to queue until it founds a "("
-                while ("(" != opStack.top()->getStr() && !opStack.empty()){
-                    //opOut->enqueue(opStack->pop());
-                    appendOut(opStack.pop());
+                if (!opStack.empty()){
+                    while ("(" != opStack.top()->getStr() && !opStack.empty()){
+                        //opOut->enqueue(opStack->pop());
+                        appendOut(opStack.pop());
+                    }
                 }
 
                 // now I have to pop the open bracket
@@ -134,18 +136,19 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
             /* move all element with higher precedence: */
             //if (!expectingOp)
             //    std::cout << "Error: Unexpected operator" << std::endl;
+            if (tokenType::OPERAND == lastEl->getFamily())
+                expectingOp = true;
             if (bufferingFunc)
                 bufferingFunc ^= 1;
-            if (tokenType::NUMBER == lastEl->getType())
-                expectingOp = true;
             if (!expectingOp)
                 std::cout << "Error: Unexpected operator" << std::endl;
             if (!opStack.empty()){
-                while ((opStack.top()->getPriority() < currentEl->getPriority()) &&
-                    opStack.top()->isOperator()                             &&
-                    !opStack.empty()){
-                    //opOut->enqueue(opStack->pop());
+                while ((opStack.top()->getPriority() < currentEl->getPriority() &&
+                        opStack.top()->isOperator())                                &&
+                        !opStack.empty()){
                     appendOut(opStack.pop());
+                    if (opStack.empty())
+                        break;
                 }
             }
             opStack.push(currentEl);
@@ -399,6 +402,7 @@ void eqParser::appendOut (tokenType *toEnqueue)
 
 void eqParser::showRPN (QString eqString)
 {
+    reset();
     QQueue<struct outStruct> RPN = getRPN(eqString);
     std::cout << "RPN length: " << RPN.length() << std::endl;
 
@@ -410,3 +414,13 @@ void eqParser::showRPN (QString eqString)
     }
 }
 
+void eqParser::reset()
+{
+    /* clean all data structures before compute a new parsing */
+    readBuf.clear();
+    bufferingFunc = false;
+    wString.clear();
+    outIndex = 0;
+    opStack.clear();
+    opOut.clear();
+}

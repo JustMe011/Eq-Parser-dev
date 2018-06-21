@@ -46,6 +46,7 @@ void wid::on_getEqBtn_clicked()
 
     QString eq;
     eq = ui->insertedTxt->text();
+    parser.reset();
     //parser = new eqParser();
     //parser->getRPN(eq);
     //parser->showRPN(eq);
