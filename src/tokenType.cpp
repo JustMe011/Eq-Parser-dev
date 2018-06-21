@@ -14,13 +14,41 @@ tokenType::~tokenType()
 void tokenType::str(QString opcode)
 {
     this->tokenStr = opcode;
+
 }
 
 void tokenType::type(tokenTypes tokType)
 {
     this->tokenCode = tokType;
+    if (    NUMBER == tokType               ||
+            SEPARATOR == tokType            ||
+            VARIABLE == tokType)
+        family(OPERAND);
+    else if (   OPEN_BRACKET == tokType     ||
+                CLOSE_BRACKET == tokType)
+        family(SYNTAX);
+    else if (   POWER == tokType            ||
+                MOLTIPLICATION == tokType   ||
+                DIVISION == tokType         ||
+                ROOT == tokType             ||
+                SUM == tokType              ||
+                SUBTRACTION == tokType)
+        family(OPERATOR);
+    else if (   NO_TOKEN == tokType)
+        family(UNKNOWN);
+    else
+        family(FUNCTION);
 }
 
+void tokenType::family (tokenFamilies family)
+{
+    this->tokenFamily = family;
+}
+
+enum tokenType::tokenFamilies tokenType::getFamily()
+{
+    return tokenFamily;
+}
 void tokenType::associativity(associativityType AssocType)
 {
     this->tokenAssociativity = AssocType;

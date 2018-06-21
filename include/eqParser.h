@@ -16,36 +16,45 @@ private:
     struct outStruct
     {
         tokenType * tokenOut;
-        unsigned int opCode;
+        int opCode;
     };
 
+    struct outStruct tmpOut;
     QString wString;
+    QChar readChar;
+    int outIndex = 0;
+    const int NON_NUMBER_OPCODE = -1;
+    QList<tokenType> tokenList; /* List of operators */
+    QStack<tokenType*> opStack;
+    QQueue<struct outStruct> opOut;
 
+    // tokenize
     void tokenize();
     QString cleanChars(QString str);
     QString toUpper(QString str);
     QString toBrackets(QString str);
     bool isLetter(QChar currentChar);
-    void printEquation();
+
+    /* init */
     void fillOps();
+    tokenType * getElement (QString read);
+
+    /* output calculations */
     int pow10 (int n); /* power of 10 calculator based on LUT */
-    double toNumber (QQueue<tokenType>  buf);
-    tokenType * getElement (QString read); /* return the element from tokenList we're handling */
-
-    // RPN
-
-
-    QChar readChar;
-    int NON_NUMBER_OPCODE = -1;
-    QList<tokenType> tokenList; /* List of operators */
-    QStack<tokenType*> opStack;
-    //QQueue<tokenType> * opOut;
-    QQueue<struct outStruct> opOut;
-    struct outStruct tmpOut;
-
-    int outIndex = 0;
     void appendOut (tokenType * toEnqueue);
+    void printEquation();
+    //double toNumber (QQueue<tokenType>  buf);
 
+    QString readBuf;
+    bool bufferingFunc = false;
+    int correspondingStrs;
+    enum foundFunc
+    {
+        foundPartial,
+        notFound
+    };
+
+    enum foundFunc compareFuncStr (QString buf);
 
 public:
     eqParser();

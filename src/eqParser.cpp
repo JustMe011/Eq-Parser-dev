@@ -59,69 +59,83 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
 
     //wString = eqString;
     wString = eqString;
-
     tokenize();
     std::cout << "tokenized str: " << wString.toStdString() << std::endl;
+
     for (int strIndex=0; strIndex < wString.length(); ++strIndex){
         currentEl = getElement(wString.at(strIndex));
+
         if (0 == strIndex)
             lastEl = currentEl;
 
-        if (tokenType::NUMBER == currentEl->getType())
+        if (tokenType::UNKNOWN == currentEl->getFamily())
         {
-            if (expectingOp)
+            if (!bufferingFunc)
+            {
+                /* starting to buffer a function opCode */
+                bufferingFunc = true;
+                readBuf.clear();
+            }
+            readBuf.append(wString.at(strIndex));
+
+            if (notFound == compareFuncStr(readBuf)){
+                std::cout << "Error: unknown token" << std::endl;
+                bufferingFunc = false;
+            }
+        }
+        else if (tokenType::OPERAND == currentEl->getFamily())
+        {
+            if (bufferingFunc)
+                bufferingFunc ^= 1;
+            if (expectingOp && tokenType::OPERAND != lastEl->getFamily())
                 std::cout << "Error: two operators near" << std::endl;
             // push to queue
             //opOut->enqueue(currentEl);
+            expectingOp = true;
             appendOut(currentEl);
 
             /*expectingOp = true; -> look at the beginning of the OPERATOR case */
         }
-        else if( tokenType::SEPARATOR == currentEl->getType())
+        else if (tokenType::SYNTAX == currentEl->getFamily())
         {
-            /* similiar to the number */
-            if (expectingOp)
-                std::cout << "Error: two operators near" << std::endl;
-            appendOut(currentEl);
-            expectingOp = false;
-        }
-        else if (tokenType::OPEN_BRACKET == currentEl->getType())
-        {
-            if (expectingOp)
-                std::cout << "Error: Need an operator before open bracket" << std::endl;
-            opStack.push(currentEl);
-            /* after open bracket he doesn't expect an op, so EO -> false,
-             * but for the previous if we know that EO is already false
-             */
-        }
-        else if (tokenType::CLOSE_BRACKET == currentEl->getType())
-        {
-            if (!expectingOp)
-                std::cout << "Error: you can't have an operator before or after a bracket"
-                          << std::endl;
-            // pop stack to queue until it founds a "("
-            while ("(" != opStack.top()->getStr() && !opStack.empty()){
-                //opOut->enqueue(opStack->pop());
-                appendOut(opStack.pop());
+            if (tokenType::OPEN_BRACKET == currentEl->getType()){
+                if (bufferingFunc)
+                    bufferingFunc ^= 1;
+                if (expectingOp)
+                    std::cout << "Error: Need an operator before open bracket" << std::endl;
+                opStack.push(currentEl);
+                /* after open bracket he doesn't expect an op, so EO -> false,
+                 * but for the previous if we know that EO is already false
+                */
             }
+            else if (tokenType::CLOSE_BRACKET == currentEl->getType()){
+                if (bufferingFunc)
+                    bufferingFunc ^= 1;
+                if (!expectingOp)
+                    std::cout << "Error: you can't have an operator before or after a bracket"
+                              << std::endl;
+                // pop stack to queue until it founds a "("
+                while ("(" != opStack.top()->getStr() && !opStack.empty()){
+                    //opOut->enqueue(opStack->pop());
+                    appendOut(opStack.pop());
+                }
 
-            // now I have to pop the open bracket
-            if (opStack.empty())
-                std::cout << "Error: missing open bracket" << std::endl;
-            appendOut(opStack.pop());
-            expectingOp = true;
+                // now I have to pop the open bracket
+                if (opStack.empty())
+                    std::cout << "Error: missing open bracket" << std::endl;
+                appendOut(opStack.pop());
+                expectingOp = true;
+            }
         }
-        else if (   tokenType::POWER == currentEl->getType()            ||
-                    tokenType::ROOT == currentEl->getType()             ||
-                    tokenType::MOLTIPLICATION == currentEl->getType()   ||
-                    tokenType::DIVISION == currentEl->getType()         ||
-                    tokenType::SUM == currentEl->getType()              ||
-                    tokenType::SUBTRACTION == currentEl->getType())
+        else if (   tokenType::OPERATOR == currentEl->getFamily()    ||
+                    tokenType::FUNCTION == currentEl->getFamily())
         {
             /* basic operators */
             /* move all element with higher precedence: */
             //if (!expectingOp)
             //    std::cout << "Error: Unexpected operator" << std::endl;
+            if (bufferingFunc)
+                bufferingFunc ^= 1;
             if (tokenType::NUMBER == lastEl->getType())
                 expectingOp = true;
             if (!expectingOp)
@@ -140,10 +154,7 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
             outIndex++;
             expectingOp = false;
         }
-        else
-        {
-            std::cout << "Error: Unexpected token" << std::endl;
-        }
+
         /* END IF */
         lastEl = currentEl; /* Update lastEl */
  } /* END FOR */
@@ -168,16 +179,46 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
 
 tokenType * eqParser::getElement (QString read)
 {
-    /* Compare read with tokenType::getstr() to know which token we have */
+    /* return a pointer to the corresponding element in tokenList  */
 
-    tokenType *element;
-    for (int i=0; i<tokenList.length(); ++i)
+    tokenType   *element = NULL,
+                *voidElement;
+    for (int i=0; i<tokenList.length(); ++i){
         if (tokenList[i].getStr() == read){
             // Found element
             element = &tokenList[i];
         }
+        if (tokenType::NO_TOKEN == tokenList[i].getType())
+            voidElement = &tokenList[i];
+    }
+    if (!element)
+    {
+        /* if element is NULL: */
+        element = voidElement;
+        //element->str(read);
+    }
+
     return element;
 }
+
+enum eqParser::foundFunc eqParser::compareFuncStr (QString buf)
+{
+    QString subStr;
+    int     subStrPos,
+            foundOccur = 0;
+    enum foundFunc out;
+    correspondingStrs = 0;
+
+    for (int i=0; i<tokenList.length(); ++i)
+    {
+        subStrPos = tokenList[i].getStr().indexOf(buf,Qt::CaseInsensitive);
+        if (0 == subStrPos)
+            ++foundOccur;
+    }
+    out = (foundOccur > 0)? foundPartial : notFound;
+    return out;
+}
+
 void eqParser::tokenize ()
 {
     /* clean the inserted string in order to have only equation tokens
@@ -288,27 +329,42 @@ int eqParser::pow10 (int n)
 
 void eqParser::fillOps()
 {
-    const int elements = 7;
+    const int elements = 14;
     tokenType tmpEl;
     tokenType::tokenTypes opTypes[elements] =
     {
+        tokenType::NO_TOKEN,
         tokenType::SUM,
         tokenType::SUBTRACTION,
         tokenType::MOLTIPLICATION,
         tokenType::DIVISION,
         tokenType::OPEN_BRACKET,
         tokenType::CLOSE_BRACKET,
-        tokenType::POWER
+        tokenType::POWER,
+        tokenType::SEPARATOR,
+        tokenType::SEPARATOR,
+        tokenType::VARIABLE,
+        tokenType::TRIGONOMETRIC_FUNCTION,
+        tokenType::TRIGONOMETRIC_FUNCTION,
+        tokenType::TRIGONOMETRIC_FUNCTION
+
     };
     QString opStr[elements]
     {
+        "",
         "+",
         "-",
         "*",
         "/",
         "(",
         ")",
-        "^"
+        "^",
+        ".",
+        ",",
+        "x",
+        "tan",
+        "sin",
+        "cos"
     };
 
     /* NUMBERS */
@@ -332,10 +388,13 @@ void eqParser::fillOps()
 void eqParser::appendOut (tokenType *toEnqueue)
 {
     /* create struct element for output queue */
-    tmpOut.tokenOut = toEnqueue;
-    tmpOut.opCode =(tokenType::NUMBER == toEnqueue->getType()   ||
-        tokenType::SEPARATOR == toEnqueue->getType()) ? outIndex : NON_NUMBER_OPCODE;
-    opOut.enqueue(tmpOut);
+    if (tokenType::OPEN_BRACKET != toEnqueue->getType() &&
+            tokenType::CLOSE_BRACKET != toEnqueue->getType()){
+        tmpOut.tokenOut = toEnqueue;
+        tmpOut.opCode =(tokenType::NUMBER == toEnqueue->getType()   ||
+            tokenType::SEPARATOR == toEnqueue->getType()) ? outIndex : NON_NUMBER_OPCODE;
+        opOut.enqueue(tmpOut);
+    }
 }
 
 void eqParser::showRPN (QString eqString)
@@ -344,9 +403,10 @@ void eqParser::showRPN (QString eqString)
     std::cout << "RPN length: " << RPN.length() << std::endl;
 
     for (int i=0; i < RPN.length(); ++i){
-        std::cout << "element: " << RPN.at(i).tokenOut->getStr().toStdString() << std::endl;
-        std::cout << "op number: " << QString::number(RPN.at(i).opCode).toStdString() << std::endl;
-        std::cout << std::endl << std::endl;
+        //std::cout << "element: " << RPN.at(i).tokenOut->getStr().toStdString() << std::endl;
+        //std::cout << "op number: " << QString::number(RPN.at(i).opCode).toStdString() << std::endl;
+        //std::cout << std::endl << std::endl;
+        std::cout << RPN.at(i).tokenOut->getStr().toStdString() << " ";
     }
 }
 

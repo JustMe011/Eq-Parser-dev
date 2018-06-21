@@ -24,7 +24,7 @@ private:
 
     void setTokenSample();
     void writeTokenSample();
-private slots:
+protected slots:
     void on_getEqBtn_clicked();
     void on_getEqBtn_released();
 

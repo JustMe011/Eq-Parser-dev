@@ -17,17 +17,20 @@ public:
      */
     enum tokenTypes
     {
+        NO_TOKEN,
         NUMBER,
         SEPARATOR,
+        VARIABLE,
         OPEN_BRACKET, /* we think brackets as special token without priority */
         CLOSE_BRACKET,
         OTHER,
-        POWER = 10,
-        ROOT = 11,
-        MOLTIPLICATION = 20,
-        DIVISION = 21,
-        SUM = 30,
-        SUBTRACTION = 31
+        TRIGONOMETRIC_FUNCTION = 10,
+        POWER = 20,
+        ROOT = 21,
+        MOLTIPLICATION = 30,
+        DIVISION = 31,
+        SUM = 40,
+        SUBTRACTION = 41
         /* add other types */
     };
 
@@ -36,6 +39,14 @@ public:
         NON_ASSOCIATIVE = 0,
         LEFT_ASSOCIATIVE = 1,
         RIGHT_ASSOCIATIVE = 2
+    };
+    enum tokenFamilies
+    {
+        OPERAND,
+        OPERATOR,
+        FUNCTION,
+        SYNTAX,
+        UNKNOWN
     };
 
     void str(QString opcode);
@@ -51,6 +62,7 @@ public:
     void associativity(associativityType AssocType);
     associativityType getAssociativity();
 
+    enum tokenFamilies getFamily();
     void clear();
 
 private:
@@ -62,12 +74,11 @@ private:
     QString tokenStr;
     // need to add pointer to the func
 
-    /* operators only */
+    tokenFamilies tokenFamily;
     associativityType tokenAssociativity;
 
     /**************************************/
-
-
+    void family (tokenFamilies family);
 
 };
 
