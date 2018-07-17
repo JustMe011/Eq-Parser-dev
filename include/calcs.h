@@ -8,7 +8,13 @@
 class calcs
 {
 public:
-    calcs();
+    calcs ();
+    ~calcs ();
+    //template <class OP> sumFunc (OP firstOperand, OP secondOperand);
+    //template <class OP> subtractionFunc (OP firstOperand, OP secondOperand);
+
+private:
+
 };
 
 #endif // CALCS_H

@@ -37,6 +37,46 @@ eqParser::~eqParser()
 
 }
 
+double eqParser::evaluatePostfix (QQueue<outStruct> RPN)
+{
+    //struct outStruct operands[2];
+    outStruct   operand1,
+                operand2;
+
+    QStack <struct outStruct> PFStack;
+    for (int index=0; index < RPN.length(); ++index)
+    {
+        switch (RPN[index].tokenOut->getFamily())
+        {
+        case tokenType::OPERATOR:
+//            for (int i=0; i< 2; ++i)
+//                operands[i] = PFStack.pop();
+            if (tokenType::FUNCTION == RPN[index].tokenOut->getType())
+            {
+                /* we have a function (unary operator) */
+                operand1 = PFStack.pop();
+            }
+
+            else
+            {
+                /* we have an operator (binary operator) */
+                operand1 = PFStack.pop();
+                operand2 = PFStack.pop();
+            }
+
+
+            break;
+
+        case tokenType::OPERAND:
+            break;
+        default:
+            break;
+        }
+    }
+    // evaluatePostfix will return the solution of the equation
+    // 0 is temporary used for debugging purpose
+    return 0;
+}
 
 QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
 {
@@ -91,6 +131,12 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
                 std::cout << "Error: two operators near" << std::endl;
             // push to queue
             //opOut->enqueue(currentEl);
+            tokenType * productEl = getElement("*");
+            if    ((tokenType::VARIABLE == lastEl->getType()    &&
+                    tokenType::NUMBER == currentEl->getType())     ||
+                    (tokenType::NUMBER == lastEl->getType()      &&
+                    tokenType::VARIABLE == currentEl->getType()))
+                appendOp(productEl);
             appendOut(currentEl);
 
             /*expectingOp = true; -> look at the beginning of the OPERATOR case */
@@ -102,7 +148,13 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
                     bufferingFunc ^= 1;
                 if (expectingOp)
                     std::cout << "Error: Need an operator before open bracket" << std::endl;
-                opStack.push(currentEl);
+                if (tokenType::NUMBER == lastEl->getType()  ||
+                    tokenType::VARIABLE == lastEl->getType())
+                {
+                    tokenType * productEl = getElement("*");
+                    appendOp(productEl);
+                }
+                appendOp(currentEl);
                 /* after open bracket he doesn't expect an op, so EO -> false,
                  * but for the previous if we know that EO is already false
                 */
@@ -110,8 +162,7 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
             else if (tokenType::CLOSE_BRACKET == currentEl->getType()){
                 if (bufferingFunc)
                     bufferingFunc ^= 1;
-                if (tokenType::OPERATOR == lastEl->getFamily()  ||
-                    tokenType::FUNCTION == lastEl->getFamily())
+                if (tokenType::OPERATOR == lastEl->getFamily())
                     std::cout << "Error: you can't have an operator before or after a bracket"
                               << std::endl;
                 // pop stack to queue until it founds a "("
@@ -129,10 +180,9 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
                 expectingOp = true;
             }
         }
-        else if (   tokenType::OPERATOR == currentEl->getFamily()    ||
-                    tokenType::FUNCTION == currentEl->getFamily())
+        else if (   tokenType::OPERATOR == currentEl->getFamily())
         {
-            /* basic operators */
+            /* opersators and functions */
             /* move all element with higher precedence: */
             //if (!expectingOp)
             //    std::cout << "Error: Unexpected operator" << std::endl;
@@ -142,22 +192,23 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
                 bufferingFunc ^= 1;
             if (!expectingOp)
                 std::cout << "Error: Unexpected operator" << std::endl;
-            if (!opStack.empty()){
-                while ((opStack.top()->getPriority() < currentEl->getPriority() &&
-                        opStack.top()->isOperator())                                &&
-                        !opStack.empty()){
-                    appendOut(opStack.pop());
-                    if (opStack.empty())
-                        break;
-                }
-            }
-            opStack.push(currentEl);
+//            if (!opStack.empty()){
+//                while ((opStack.top()->getPriority() < currentEl->getPriority() &&
+//                        opStack.top()->isOperator())                                &&
+//                        !opStack.empty()){
+//                    appendOut(opStack.pop());
+//                    if (opStack.empty())
+//                        break;
+//                }
+//            }
+//            opStack.push(currentEl);
 
+            appendOp(currentEl);
             /* increment operator opCode */
             outIndex++;
             expectingOp = false;
         }
-
+    
         /* END IF */
         lastEl = currentEl; /* Update lastEl */
  } /* END FOR */
@@ -347,9 +398,9 @@ void eqParser::fillOps()
         tokenType::SEPARATOR,
         tokenType::SEPARATOR,
         tokenType::VARIABLE,
-        tokenType::TRIGONOMETRIC_FUNCTION,
-        tokenType::TRIGONOMETRIC_FUNCTION,
-        tokenType::TRIGONOMETRIC_FUNCTION
+        tokenType::FUNCTION,
+        tokenType::FUNCTION,
+        tokenType::FUNCTION
 
     };
     QString opStr[elements]
@@ -398,6 +449,20 @@ void eqParser::appendOut (tokenType *toEnqueue)
             tokenType::SEPARATOR == toEnqueue->getType()) ? outIndex : NON_NUMBER_OPCODE;
         opOut.enqueue(tmpOut);
     }
+}
+
+void eqParser::appendOp (tokenType *toPush)
+{
+    if (!opStack.empty()){
+        while ((opStack.top()->getPriority() < toPush->getPriority() &&
+                opStack.top()->isOperator())                                &&
+                !opStack.empty()){
+            appendOut(opStack.pop());
+            if (opStack.empty())
+                break;
+        }
+    }
+    opStack.push(toPush);
 }
 
 void eqParser::showRPN (QString eqString)

@@ -13,7 +13,7 @@ tokenType::~tokenType()
 
 void tokenType::str(QString opcode)
 {
-    this->tokenStr = opcode;
+    this->tokenStr = opcode.toUpper();
 
 }
 
@@ -32,12 +32,11 @@ void tokenType::type(tokenTypes tokType)
                 DIVISION == tokType         ||
                 ROOT == tokType             ||
                 SUM == tokType              ||
-                SUBTRACTION == tokType)
+                SUBTRACTION == tokType      ||
+                FUNCTION == tokType)
         family(OPERATOR);
     else if (   NO_TOKEN == tokType)
         family(UNKNOWN);
-    else
-        family(FUNCTION);
 }
 
 void tokenType::family (tokenFamilies family)

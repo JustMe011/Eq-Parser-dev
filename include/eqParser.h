@@ -42,6 +42,7 @@ private:
     /* output calculations */
     int pow10 (int n); /* power of 10 calculator based on LUT */
     void appendOut (tokenType * toEnqueue);
+    void appendOp (tokenType * toPush);
     void printEquation();
     //double toNumber (QQueue<tokenType>  buf);
 
@@ -55,6 +56,7 @@ private:
     };
 
     enum foundFunc compareFuncStr (QString buf);
+    double evaluatePostfix (QQueue<struct outStruct> RPN);
 
 public:
     eqParser();
@@ -65,7 +67,7 @@ public:
     QQueue<struct outStruct>  getRPN(QString eqString);
     void showRPN(QString eqString);
     void solveEq (QString eqString);
-    void solveEq(QQueue<struct outStruct> RPN);
+    double solveEq(QQueue<struct outStruct> RPN);
     void reset();
 
 };

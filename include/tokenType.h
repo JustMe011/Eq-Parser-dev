@@ -24,7 +24,7 @@ public:
         OPEN_BRACKET, /* we think brackets as special token without priority */
         CLOSE_BRACKET,
         OTHER,
-        TRIGONOMETRIC_FUNCTION = 10,
+        FUNCTION = 10,
         POWER = 20,
         ROOT = 21,
         MOLTIPLICATION = 30,
@@ -44,7 +44,6 @@ public:
     {
         OPERAND,
         OPERATOR,
-        FUNCTION,
         SYNTAX,
         UNKNOWN
     };
