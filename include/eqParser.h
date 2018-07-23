@@ -49,13 +49,9 @@ private:
     QString readBuf;
     bool bufferingFunc = false;
     int correspondingStrs;
-    enum foundFunc
-    {
-        foundPartial,
-        notFound
-    };
 
-    enum foundFunc compareFuncStr (QString buf);
+    bool compareFuncStr (QString buf);
+    bool doThingsWithTok (QString buf);
     double evaluatePostfix (QQueue<struct outStruct> RPN);
 
 public:

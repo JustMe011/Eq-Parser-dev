@@ -90,40 +90,84 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
      * if i read a number, a separator and a number again I have to compose a decimal number
      *
      *****                                 *****/
-    tokenType   *lastEl,
-                *currentEl;
-    bool    expectingOp =false;
+    bool    expectingOp =false,
+            readTok;
+    int readingIndex = 0;
+    QString currChar,
+            nextChar,
+            readBuf;
 
     std::cout << "getRPN called" << std::endl;
     std::cout << "eqString: " << eqString.toStdString() << std::endl;
 
-    //wString = eqString;
     wString = eqString;
     tokenize();
     std::cout << "tokenized str: " << wString.toStdString() << std::endl;
+// ASDONE inserire roba qui
+    readBuf.clear();
+
+    readTok = true;
+    nextChar = wString.at(readingIndex);
+    readBuf.clear();
+    while (readingIndex < wString.size())
+    {
+        /* ricerca token */
+        currChar = nextChar;
+        if(nullptr == getElement(currChar))
+        {
+            if (compareFuncStr(currChar))
+            {
+                if (readTok)
+                    readBuf.clear();
+                readBuf.append(currChar);
+                readTok = false;
+            }
+            else
+                std::cout << "Error, unknown token" << std::endl;
+
+        }
+        else
+        {
+            doThingsWithTok(currChar);
+        }
+
+        nextChar = (readTok) ? wString.at(++readingIndex)
+                             : readBuf;
+    }
+
+
+
+    /* finish read tokens, now I have to push all the tack on the queue.
+     * Now, if I read a open bracket (and I've finished to read tokens)
+     * it means that I can't close that bracket -> ERROR
+     */
+    if (expectingOp)
+        std::cout << "Error, can't end equation with an operator" << std::endl;
+    while (!opStack.empty())
+    {
+        if (tokenType::OPEN_BRACKET == opStack.top()->getType())
+            std::cout << "Error: Unbalanced bracket" << std::endl;
+        //opOut->enqueue(opStack->pop());
+        appendOut(opStack.pop());
+    }
+    return opOut;
+}
+
+/* END interface */
+bool eqParser::doThingsWithTok( QString buf)
+{
+    tokenType   *lastEl,
+                *currentEl;
+    bool foundToken = false;
 
     for (int strIndex=0; strIndex < wString.length(); ++strIndex){
-        currentEl = getElement(wString.at(strIndex));
+//        currentEl = getElement(wString.at(strIndex));
+//        foundFunction = false;
 
         if (0 == strIndex)
             lastEl = currentEl;
 
-        if (tokenType::UNKNOWN == currentEl->getFamily())
-        {
-            if (!bufferingFunc)
-            {
-                /* starting to buffer a function opCode */
-                bufferingFunc = true;
-                readBuf.clear();
-            }
-            readBuf.append(wString.at(strIndex));
-
-            if (notFound == compareFuncStr(readBuf)){
-                std::cout << "Error: unknown token" << std::endl;
-                bufferingFunc = false;
-            }
-        }
-        else if (tokenType::OPERAND == currentEl->getFamily())
+        if (tokenType::OPERAND == currentEl->getFamily())
         {
             if (bufferingFunc)
                 bufferingFunc ^= 1;
@@ -208,69 +252,50 @@ QQueue<struct eqParser::outStruct> eqParser::getRPN (QString eqString)
             outIndex++;
             expectingOp = false;
         }
-    
+
         /* END IF */
         lastEl = currentEl; /* Update lastEl */
  } /* END FOR */
 
-    /* finish read tokens, now I have to push all the tack on the queue.
-     * Now, if I read a open bracket (and I've finished to read tokens)
-     * it means that I can't close that bracket -> ERROR
-     */
-    if (expectingOp)
-        std::cout << "Error, can't end equation with an operator" << std::endl;
-    while (!opStack.empty())
-    {
-        if (tokenType::OPEN_BRACKET == opStack.top()->getType())
-            std::cout << "Error: Unbalanced bracket" << std::endl;
-        //opOut->enqueue(opStack->pop());
-        appendOut(opStack.pop());
-    }
-    return opOut;
 }
-
-/* END interface */
 
 tokenType * eqParser::getElement (QString read)
 {
     /* return a pointer to the corresponding element in tokenList  */
 
-    tokenType   *element = NULL,
-                *voidElement;
-    for (int i=0; i<tokenList.length(); ++i){
-        if (tokenList[i].getStr() == read){
+    tokenType   *element = nullptr;
+
+    for (int TLindex=0; TLindex<tokenList.length(); ++TLindex){
+        if (tokenList[TLindex].getStr() == read){
             // Found element
-            element = &tokenList[i];
+            element = &tokenList[TLindex];
         }
-        if (tokenType::NO_TOKEN == tokenList[i].getType())
-            voidElement = &tokenList[i];
     }
-    if (!element)
+
+    if (element)
     {
         /* if element is NULL: */
-        element = voidElement;
-        //element->str(read);
+        element = nullptr;
     }
 
     return element;
 }
 
-enum eqParser::foundFunc eqParser::compareFuncStr (QString buf)
+bool eqParser::compareFuncStr (QString buf)
 {
-    QString subStr;
-    int     subStrPos,
-            foundOccur = 0;
-    enum foundFunc out;
-    correspondingStrs = 0;
+    bool    TokFound = false,
+            partialFound = false;
 
-    for (int i=0; i<tokenList.length(); ++i)
+    for (int TLindex=0; TLindex<tokenList.length(); ++TLindex)
     {
-        subStrPos = tokenList[i].getStr().indexOf(buf,Qt::CaseInsensitive);
-        if (0 == subStrPos)
-            ++foundOccur;
+        TokFound = false;
+        if (0 == tokenList[TLindex].getStr().indexOf(buf,Qt::CaseInsensitive))
+            TokFound = true;
+        partialFound = partialFound || TokFound;
+
     }
-    out = (foundOccur > 0)? foundPartial : notFound;
-    return out;
+    return partialFound;
+
 }
 
 void eqParser::tokenize ()
