@@ -17,9 +17,16 @@ private:
     {
         tokenType * tokenOut;
         int opCode;
-    };
-
+    }; 
     struct outStruct tmpOut;
+
+    struct passToken
+    {
+        tokenType * currTok;
+        tokenType * lastTok;
+    };
+    //struct passToken passedTok;
+
     QString wString;
     QChar readChar;
     int outIndex = 0;
@@ -40,7 +47,7 @@ private:
     tokenType * getElement (QString read);
 
     /* output calculations */
-    int pow10 (int n); /* power of 10 calculator based on LUT */
+    double pow10 (int n); /* power of 10 calculator based on LUT */
     void appendOut (tokenType * toEnqueue);
     void appendOp (tokenType * toPush);
     void printEquation();
@@ -51,7 +58,8 @@ private:
     int correspondingStrs;
 
     bool compareFuncStr (QString buf);
-    bool doThingsWithTok (QString buf);
+   // bool doThingsWithTok (tokenType * currTok);
+    bool doThingsWithTok (passToken passedTok);
     double evaluatePostfix (QQueue<struct outStruct> RPN);
 
 public:
