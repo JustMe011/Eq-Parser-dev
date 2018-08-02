@@ -1,6 +1,5 @@
 #include "wid.h"
 #include "ui_wid.h"
-#include <tokenType.h>
 
 wid::wid(QWidget *parent) :
     QWidget(parent),
