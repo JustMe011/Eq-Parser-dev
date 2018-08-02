@@ -28,14 +28,16 @@ SOURCES += \
     src/eqParser.cpp \
     src/main.cpp \
     src/plotPoint.cpp \
-    src/wid.cpp
+    src/wid.cpp \
+    src/evaluator.c
 
 
 
 HEADERS += \
     include/eqParser.h \
     include/plotPoint.h \
-    include/wid.h
+    include/wid.h \
+    include/evaluator.h
 
 
 

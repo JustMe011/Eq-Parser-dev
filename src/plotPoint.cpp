@@ -3,18 +3,24 @@
 plotPoint::plotPoint(int nOfPoints)
 {
     pointNumber = nOfPoints;
+    domain.reserve(pointNumber);
+    funcValues.reserve(pointNumber);
 
-    // test:
-
-    //storedData[DOM].idType = DOM;
-    //storedData[DOM].idType = FUNC;
+    setDomain();
+    initializeFunValues();
 }
 
 void plotPoint::setDomain()
 {
     int el=0;
-    for (int i:domain)
+    for (double i:domain)
     {
         i = el++;
     }
+}
+
+void plotPoint::initializeFunValues()
+{
+    for (double i:funcValues)
+        i = 0;
 }

@@ -2,7 +2,6 @@
 #define WID_H
 
 #include <QWidget>
-#include <tokenType.h>
 #include <eqParser.h>
 
 namespace Ui {
@@ -19,7 +18,6 @@ public:
 
 private:
     Ui::wid *ui;
-    tokenType *token1;
     eqParser parser;
 
     void setTokenSample();

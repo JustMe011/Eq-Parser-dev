@@ -12,11 +12,14 @@ public:
 private:
     //bool foundData;
     int pointNumber;
-    QVector<int> domain;
+    //QVector<double> domain(pointNumber);
+    //QVector<double> funcValues (QVector<double> pointNumber);
+    QVector<double> domain;
+    QVector<double> funcValues;
 
 //    pointTypes storedData[STORED_LENGTH];
     void setDomain ();
-
+    void initializeFunValues();
 
 };
 
